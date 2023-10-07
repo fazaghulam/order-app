@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, FlatList, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, FlatList, Image, TouchableOpacity, TextInput } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import Modal from "react-native-modal";
@@ -11,6 +11,10 @@ const OrderDetailScreen = () => {
   const [items, setItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemQuantity, setNewItemQuantity] = useState("");
+  const [newItemPrice, setNewItemPrice] = useState("");
 
   const renderItem = ({ item }) => {
     const handleDeleteItem = (itemId) => {
@@ -70,6 +74,46 @@ const OrderDetailScreen = () => {
     }
   };
 
+  const handleCreateItem = async () => {
+    try {
+      const response = await fetch("https://dev.profescipta.co.id/so-api/Order/CreateItem", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          state: "12345",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ItemId: Math.floor(Math.random() * 1000), // Generate a random ItemId
+          ItemName: newItemName,
+          Quantity: parseInt(newItemQuantity),
+          Price: parseInt(newItemPrice),
+        }),
+      });
+
+      if (response.ok) {
+        const newItem = {
+          ItemId: Math.floor(Math.random() * 1000), // Generate a random ItemId
+          ItemName: newItemName,
+          Quantity: parseInt(newItemQuantity),
+          Price: parseInt(newItemPrice),
+        };
+        const updatedItems = [...items, newItem];
+        setItems(updatedItems);
+        setCreateModalVisible(false);
+        setNewItemName("");
+        setNewItemQuantity("");
+        setNewItemPrice("");
+      } else {
+        // Handle error
+        console.error("Failed to create a new item");
+      }
+    } catch (error) {
+      // Handle error
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -121,11 +165,11 @@ const OrderDetailScreen = () => {
       </View>
       <View style={{ width: 300, flexDirection: "row", justifyContent: "space-between" }}>
         <Text style={styles.subTitle}>Detail Sales</Text>
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity style={styles.addButton} onPress={() => setCreateModalVisible(true)}>
           <Text style={styles.addButtonText}>Add Item</Text>
         </TouchableOpacity>
       </View>
-      {(items.length && <FlatList data={items} renderItem={renderItem} keyExtractor={(item) => item.OrderId} />) || (
+      {(items.length && <FlatList data={items} renderItem={renderItem} keyExtractor={(item) => item.ItemName} />) || (
         <Text style={{ margin: 20 }}>No Data Available</Text>
       )}
 
@@ -139,6 +183,43 @@ const OrderDetailScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity onPress={handleConfirmDelete} style={styles.modalButtonDelete}>
               <Text style={styles.modalButtonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal isVisible={isCreateModalVisible}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Create New Item</Text>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Item Name"
+            placeholderTextColor="#ccc"
+            value={newItemName}
+            onChangeText={(text) => setNewItemName(text)}
+          />
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Quantity"
+            placeholderTextColor="#ccc"
+            keyboardType="numeric"
+            value={newItemQuantity}
+            onChangeText={(text) => setNewItemQuantity(text)}
+          />
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Price"
+            placeholderTextColor="#ccc"
+            keyboardType="numeric"
+            value={newItemPrice}
+            onChangeText={(text) => setNewItemPrice(text)}
+          />
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity onPress={() => setCreateModalVisible(false)} style={styles.modalButtonCancel}>
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCreateItem} style={styles.modalButtonCreate}>
+              <Text style={styles.modalButtonText}>Create</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -237,9 +318,24 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 5,
   },
+  modalButtonCreate: {
+    backgroundColor: "green",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
   modalButtonText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  modalInput: {
+    width: "100%",
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 5,
   },
 });
 
