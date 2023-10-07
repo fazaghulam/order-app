@@ -1,4 +1,5 @@
 import React from "react";
+import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Provider } from "react-redux";
@@ -17,6 +18,7 @@ export default function App() {
           <Stack.Screen name="OrderScreen" component={OrderScreen} options={{ headerTitle: "" }} />
         </Stack.Navigator>
       </NavigationContainer>
+      <StatusBar style="auto" />
     </Provider>
   );
 }
