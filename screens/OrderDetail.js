@@ -12,6 +12,11 @@ const OrderDetailScreen = () => {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [editedItemId, setEditedItemId] = useState(null);
+  const [editedItemName, setEditedItemName] = useState("");
+  const [editedItemQuantity, setEditedItemQuantity] = useState("");
+  const [editedItemPrice, setEditedItemPrice] = useState("");
   const [newItemName, setNewItemName] = useState("");
   const [newItemQuantity, setNewItemQuantity] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
@@ -20,6 +25,13 @@ const OrderDetailScreen = () => {
     const handleDeleteItem = (itemId) => {
       setSelectedItemId(itemId);
       setDeleteModalVisible(true);
+    };
+    const handleEditItem = (itemId, itemName, quantity, price) => {
+      setEditedItemId(itemId);
+      setEditedItemName(itemName);
+      setEditedItemQuantity(quantity.toString());
+      setEditedItemPrice(price.toString());
+      setEditModalVisible(true);
     };
     return (
       <View style={styles.listItem}>
@@ -36,7 +48,9 @@ const OrderDetailScreen = () => {
           <Text>{item.Price * item.Quantity}</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image style={{ width: 18, height: 18, marginRight: 10 }} source={require("../assets/edit.png")} />
+          <TouchableOpacity onPress={() => handleEditItem(item.ItemId, item.ItemName, item.Quantity, item.Price)}>
+            <Image style={{ width: 18, height: 18, marginRight: 10 }} source={require("../assets/edit.png")} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleDeleteItem(item.ItemId)}>
             <Image style={{ width: 18, height: 18 }} source={require("../assets/delete.png")} />
           </TouchableOpacity>
@@ -107,6 +121,53 @@ const OrderDetailScreen = () => {
       } else {
         // Handle error
         console.error("Failed to create a new item");
+      }
+    } catch (error) {
+      // Handle error
+      console.error(error);
+    }
+  };
+
+  const handleEditItemSubmit = async () => {
+    try {
+      const response = await fetch("https://dev.profescipta.co.id/so-api/Order/UpdateItem", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          state: "12345",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ItemId: editedItemId,
+          ItemName: editedItemName,
+          Quantity: parseInt(editedItemQuantity),
+          Price: parseInt(editedItemPrice),
+        }),
+      });
+
+      if (response.ok) {
+        // Update the item in the local state with the edited data
+        const updatedItems = items.map((item) => {
+          if (item.ItemId === editedItemId) {
+            return {
+              ...item,
+              ItemName: editedItemName,
+              Quantity: parseInt(editedItemQuantity),
+              Price: parseInt(editedItemPrice),
+            };
+          }
+          return item;
+        });
+
+        setItems(updatedItems);
+        setEditModalVisible(false);
+        setEditedItemId(null);
+        setEditedItemName("");
+        setEditedItemQuantity("");
+        setEditedItemPrice("");
+      } else {
+        // Handle error
+        console.error("Failed to update the item");
       }
     } catch (error) {
       // Handle error
@@ -220,6 +281,43 @@ const OrderDetailScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity onPress={handleCreateItem} style={styles.modalButtonCreate}>
               <Text style={styles.modalButtonText}>Create</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal isVisible={isEditModalVisible}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Edit Item</Text>
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Item Name"
+            placeholderTextColor="#ccc"
+            value={editedItemName}
+            onChangeText={(text) => setEditedItemName(text)}
+          />
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Quantity"
+            placeholderTextColor="#ccc"
+            keyboardType="numeric"
+            value={editedItemQuantity}
+            onChangeText={(text) => setEditedItemQuantity(text)}
+          />
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Price"
+            placeholderTextColor="#ccc"
+            keyboardType="numeric"
+            value={editedItemPrice}
+            onChangeText={(text) => setEditedItemPrice(text)}
+          />
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.modalButtonCancel}>
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleEditItemSubmit} style={styles.modalButtonCreate}>
+              <Text style={styles.modalButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
