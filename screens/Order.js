@@ -1,28 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList } from "react-native";
 import { useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
 
 const OrderScreen = () => {
   const token = useSelector((state) => state.auth.token);
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
+  const navigation = useNavigation();
 
   const renderItem = ({ item }) => {
     const dateString = item.OrderDate;
     const date = new Date(dateString);
     const formattedDate = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
     return (
-      <View style={styles.orderItem}>
-        <Text>{item.OrderNo}</Text>
-        <Text>{item.CustomerName}</Text>
-        <Text>{formattedDate}</Text>
-      </View>
+      <TouchableOpacity onPress={() => handleOrderItemPress(item)}>
+        <View style={styles.orderItem}>
+          <Text>{item.OrderNo}</Text>
+          <Text>{item.CustomerName}</Text>
+          <Text>{formattedDate}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
   const handleFilter = (value) => {
     const filteredOrders = orders.filter((order) => order.CustomerName.toLowerCase().includes(value.toLowerCase()));
     setFilteredOrders(filteredOrders);
+  };
+
+  const handleOrderItemPress = (item) => {
+    navigation.navigate("OrderDetailScreen", { order: item });
   };
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import store from "./store";
 import LoginScreen from "./screens/Login";
 import OrderScreen from "./screens/Order";
+import OrderDetailScreen from "./screens/OrderDetail";
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="Login">
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen name="OrderScreen" component={OrderScreen} options={{ headerTitle: "" }} />
+          <Stack.Screen name="OrderDetailScreen" component={OrderDetailScreen} options={{ headerTitle: "" }} />
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="auto" />
