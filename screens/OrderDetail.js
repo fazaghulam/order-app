@@ -20,6 +20,7 @@ const OrderDetailScreen = () => {
   const [newItemName, setNewItemName] = useState("");
   const [newItemQuantity, setNewItemQuantity] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const renderItem = ({ item }) => {
     const handleDeleteItem = (itemId) => {
@@ -61,6 +62,7 @@ const OrderDetailScreen = () => {
 
   const handleConfirmDelete = async () => {
     try {
+      setLoading(true);
       const response = await fetch("https://dev.profescipta.co.id/so-api/Order/DeleteItem", {
         method: "POST",
         headers: {
@@ -78,18 +80,18 @@ const OrderDetailScreen = () => {
         setItems(updatedItems);
         setDeleteModalVisible(false);
         setSelectedItemId(null);
+        setLoading(false);
       } else {
-        // Handle error
-        console.error("Failed to delete the item");
+        setLoading(false);
       }
     } catch (error) {
-      // Handle error
-      console.error(error);
+      setLoading(false);
     }
   };
 
   const handleCreateItem = async () => {
     try {
+      setLoading(true);
       const response = await fetch("https://dev.profescipta.co.id/so-api/Order/CreateItem", {
         method: "POST",
         headers: {
@@ -98,7 +100,7 @@ const OrderDetailScreen = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ItemId: Math.floor(Math.random() * 1000), // Generate a random ItemId
+          ItemId: Math.floor(Math.random() * 1000),
           ItemName: newItemName,
           Quantity: parseInt(newItemQuantity),
           Price: parseInt(newItemPrice),
@@ -107,7 +109,7 @@ const OrderDetailScreen = () => {
 
       if (response.ok) {
         const newItem = {
-          ItemId: Math.floor(Math.random() * 1000), // Generate a random ItemId
+          ItemId: Math.floor(Math.random() * 1000),
           ItemName: newItemName,
           Quantity: parseInt(newItemQuantity),
           Price: parseInt(newItemPrice),
@@ -118,18 +120,18 @@ const OrderDetailScreen = () => {
         setNewItemName("");
         setNewItemQuantity("");
         setNewItemPrice("");
+        setLoading(false);
       } else {
-        // Handle error
-        console.error("Failed to create a new item");
+        setLoading(false);
       }
     } catch (error) {
-      // Handle error
-      console.error(error);
+      setLoading(false);
     }
   };
 
   const handleEditItemSubmit = async () => {
     try {
+      setLoading(true);
       const response = await fetch("https://dev.profescipta.co.id/so-api/Order/UpdateItem", {
         method: "POST",
         headers: {
@@ -146,7 +148,6 @@ const OrderDetailScreen = () => {
       });
 
       if (response.ok) {
-        // Update the item in the local state with the edited data
         const updatedItems = items.map((item) => {
           if (item.ItemId === editedItemId) {
             return {
@@ -165,13 +166,12 @@ const OrderDetailScreen = () => {
         setEditedItemName("");
         setEditedItemQuantity("");
         setEditedItemPrice("");
+        setLoading(false);
       } else {
-        // Handle error
-        console.error("Failed to update the item");
+        setLoading(false);
       }
     } catch (error) {
-      // Handle error
-      console.error(error);
+      setLoading(false);
     }
   };
 
@@ -190,11 +190,8 @@ const OrderDetailScreen = () => {
           const data = await response.json();
           setItems(data);
         } else {
-          // Handle error
         }
-      } catch (error) {
-        // Handle error
-      }
+      } catch (error) {}
     };
 
     fetchItems();
@@ -239,13 +236,18 @@ const OrderDetailScreen = () => {
           <Text style={styles.modalTitle}>Confirm Deletion</Text>
           <Text style={styles.modalText}>Are you sure you want to delete this item?</Text>
           <View style={styles.modalButtonContainer}>
-            <TouchableOpacity onPress={() => setDeleteModalVisible(false)} style={styles.modalButtonCancel}>
+            <TouchableOpacity
+              onPress={() => setDeleteModalVisible(false)}
+              style={styles.modalButtonCancel}
+              disabled={loading}
+            >
               <Text style={styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleConfirmDelete} style={styles.modalButtonDelete}>
+            <TouchableOpacity onPress={handleConfirmDelete} style={styles.modalButtonDelete} disabled={loading}>
               <Text style={styles.modalButtonText}>Delete</Text>
             </TouchableOpacity>
           </View>
+          {loading && <Text>Loading...</Text>}
         </View>
       </Modal>
 
@@ -276,13 +278,18 @@ const OrderDetailScreen = () => {
             onChangeText={(text) => setNewItemPrice(text)}
           />
           <View style={styles.modalButtonContainer}>
-            <TouchableOpacity onPress={() => setCreateModalVisible(false)} style={styles.modalButtonCancel}>
+            <TouchableOpacity
+              onPress={() => setCreateModalVisible(false)}
+              style={styles.modalButtonCancel}
+              disabled={loading}
+            >
               <Text style={styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleCreateItem} style={styles.modalButtonCreate}>
+            <TouchableOpacity onPress={handleCreateItem} style={styles.modalButtonCreate} disabled={loading}>
               <Text style={styles.modalButtonText}>Create</Text>
             </TouchableOpacity>
           </View>
+          {loading && <Text>Loading...</Text>}
         </View>
       </Modal>
 
@@ -313,13 +320,14 @@ const OrderDetailScreen = () => {
             onChangeText={(text) => setEditedItemPrice(text)}
           />
           <View style={styles.modalButtonContainer}>
-            <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.modalButtonCancel}>
+            <TouchableOpacity onPress={() => setEditModalVisible(false)} style={styles.modalButtonCancel} disabled={loading}>
               <Text style={styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleEditItemSubmit} style={styles.modalButtonCreate}>
+            <TouchableOpacity onPress={handleEditItemSubmit} style={styles.modalButtonCreate} disabled={loading}>
               <Text style={styles.modalButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
+          {loading && <Text>Loading...</Text>}
         </View>
       </Modal>
     </View>

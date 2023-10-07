@@ -8,6 +8,7 @@ const OrderScreen = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
 
   const renderItem = ({ item }) => {
     const dateString = item.OrderDate;
@@ -36,6 +37,7 @@ const OrderScreen = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setLoading(true);
         const response = await fetch("https://dev.profescipta.co.id/so-api/Order/GetOrderList", {
           method: "GET",
           headers: {
@@ -47,9 +49,13 @@ const OrderScreen = () => {
           const data = await response.json();
           setOrders(data);
           setFilteredOrders(data);
+          setLoading(false);
         } else {
+          setLoading(false);
         }
-      } catch (error) {}
+      } catch (error) {
+        setLoading(false);
+      }
     };
 
     fetchOrders();
@@ -71,6 +77,7 @@ const OrderScreen = () => {
         </TouchableOpacity>
       </View>
       <FlatList data={filteredOrders} renderItem={renderItem} keyExtractor={(item) => item.OrderNo} />
+      {loading && <Text>Loading...</Text>}
     </View>
   );
 };

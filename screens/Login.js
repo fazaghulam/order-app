@@ -44,6 +44,7 @@ const LoginScreen = () => {
       <TouchableOpacity style={styles.loginButton} onPress={handleSubmitPress} disabled={loading}>
         <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
+      {loading && <Text>Loading...</Text>}
     </View>
   );
 };
